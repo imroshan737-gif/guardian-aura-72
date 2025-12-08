@@ -103,15 +103,18 @@ const Dashboard = () => {
       {/* Top Navigation Bar */}
       <nav className="relative z-20 flex items-center justify-between px-6 py-4 border-b border-border/30 backdrop-blur-sm">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-3">
+          <button 
+            onClick={() => navigate("/")}
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+          >
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border border-primary/30">
               <div className="w-4 h-4 rounded-full bg-gradient-to-br from-primary to-secondary" />
             </div>
-            <div>
+            <div className="text-left">
               <h1 className="font-orbitron font-bold text-lg text-gradient">NeuroAura</h1>
               <p className="text-xs text-muted-foreground">AI Wellness System</p>
             </div>
-          </div>
+          </button>
         </div>
 
         <div className="flex items-center gap-4">

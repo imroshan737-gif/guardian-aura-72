@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { User, Mail, Phone, Calendar, MapPin, GraduationCap, Save, Edit2 } from "lucide-react";
+import { User, Mail, Save, Edit2, LogOut } from "lucide-react";
 import NeonButton from "./NeonButton";
 import NeonInput from "./NeonInput";
 import { cn } from "@/lib/utils";
@@ -9,12 +10,6 @@ import { toast } from "@/hooks/use-toast";
 interface ProfileData {
   name: string;
   email: string;
-  phone: string;
-  birthday: string;
-  location: string;
-  university: string;
-  major: string;
-  year: string;
 }
 
 interface ProfileSheetProps {
@@ -24,16 +19,11 @@ interface ProfileSheetProps {
 }
 
 export default function ProfileSheet({ open, onOpenChange, isDemo = false }: ProfileSheetProps) {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [profile, setProfile] = useState<ProfileData>({
     name: isDemo ? "Demo Student" : "John Doe",
     email: isDemo ? "demo@neuroaura.app" : "john.doe@university.edu",
-    phone: "+1 (555) 123-4567",
-    birthday: "1999-05-15",
-    location: "San Francisco, CA",
-    university: "Stanford University",
-    major: "Computer Science",
-    year: "Junior",
   });
 
   const handleSave = () => {
@@ -44,15 +34,18 @@ export default function ProfileSheet({ open, onOpenChange, isDemo = false }: Pro
     });
   };
 
+  const handleLogout = () => {
+    onOpenChange(false);
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
+    navigate("/");
+  };
+
   const fields = [
     { key: "name", label: "Full Name", icon: User, type: "text" },
     { key: "email", label: "Email", icon: Mail, type: "email" },
-    { key: "phone", label: "Phone", icon: Phone, type: "tel" },
-    { key: "birthday", label: "Birthday", icon: Calendar, type: "date" },
-    { key: "location", label: "Location", icon: MapPin, type: "text" },
-    { key: "university", label: "University", icon: GraduationCap, type: "text" },
-    { key: "major", label: "Major", icon: GraduationCap, type: "text" },
-    { key: "year", label: "Year", icon: Calendar, type: "text" },
   ];
 
   return (
@@ -82,7 +75,7 @@ export default function ProfileSheet({ open, onOpenChange, isDemo = false }: Pro
               </span>
             </div>
             <p className="mt-4 font-orbitron text-lg text-foreground">{profile.name}</p>
-            <p className="text-sm text-muted-foreground">{profile.university}</p>
+            <p className="text-sm text-muted-foreground">{profile.email}</p>
           </div>
         </SheetHeader>
 
@@ -116,6 +109,17 @@ export default function ProfileSheet({ open, onOpenChange, isDemo = false }: Pro
               </NeonButton>
             </div>
           )}
+
+          {/* Logout Button */}
+          <div className="pt-6 border-t border-border/30 mt-6">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive hover:bg-destructive/20 transition-all font-orbitron text-sm"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>
