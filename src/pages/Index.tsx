@@ -10,22 +10,18 @@ import {
   CheckCircle,
   GraduationCap
 } from "lucide-react";
+import ParticleBackground from "@/components/ParticleBackground";
 import GlassCard from "@/components/GlassCard";
 import NeonButton from "@/components/NeonButton";
 import AIGuardianOrb from "@/components/AIGuardianOrb";
 import DemoTour from "@/components/DemoTour";
 import { cn } from "@/lib/utils";
-import { useState, lazy, Suspense, memo } from "react";
-
-// Lazy load particle background
-const ParticleBackground = lazy(() => import("@/components/ParticleBackground"));
+import { useState, memo } from "react";
 
 // Memoized feature card
-const FeatureCard = memo(({ feature, index }: { feature: any; index: number }) => (
+const FeatureCard = memo(({ feature }: { feature: any }) => (
   <GlassCard
-    className={cn(
-      "group hover:scale-[1.01] transition-transform duration-300"
-    )}
+    className="group hover:scale-[1.01] transition-transform duration-300"
   >
     <div className="flex items-start gap-4">
       <div
@@ -106,9 +102,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
-      <Suspense fallback={null}>
-        <ParticleBackground />
-      </Suspense>
+      <ParticleBackground />
 
       {/* Simplified ambient glow effects */}
       <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-primary/3 rounded-full blur-[100px]" />
@@ -206,8 +200,8 @@ const Index = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6">
-            {features.map((feature, index) => (
-              <FeatureCard key={feature.title} feature={feature} index={index} />
+            {features.map((feature) => (
+              <FeatureCard key={feature.title} feature={feature} />
             ))}
           </div>
         </div>

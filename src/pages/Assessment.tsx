@@ -207,6 +207,11 @@ export default function Assessment() {
       // Calculate stress score locally (would be API call in production)
       const stressResult = calculateStressScore(payload);
       
+      // Store assessment completion
+      localStorage.setItem("neuroaura_assessment_done", "true");
+      localStorage.setItem("neuroaura_stress_score", String(stressResult.stressScore));
+      localStorage.setItem("neuroaura_mood", stressResult.mood);
+      
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -230,7 +235,7 @@ export default function Assessment() {
     toast.info("Starting intervention...", {
       description: result?.recommendedIntervention.title,
     });
-    // For now, go to dashboard
+    // Go to dashboard
     navigate("/dashboard");
   };
 
@@ -254,12 +259,12 @@ export default function Assessment() {
   // Privacy consent screen
   if (showPrivacy) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
         <ParticleBackground />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-[80px]" />
         
-        <div className="relative z-10 w-full max-w-md animate-scale-in">
+        <div className="relative z-10 w-full max-w-md">
           <PrivacyNotice onAccept={handlePrivacyAccept} onDecline={handlePrivacyDecline} />
         </div>
       </div>
@@ -269,12 +274,12 @@ export default function Assessment() {
   // Results screen
   if (result) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
         <ParticleBackground />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-[80px]" />
         
-        <div className="relative z-10 w-full animate-scale-in">
+        <div className="relative z-10 w-full">
           <StressResultCard
             result={result}
             onStartIntervention={handleStartIntervention}
@@ -287,10 +292,10 @@ export default function Assessment() {
 
   // Question flow
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
       <ParticleBackground />
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[120px] animate-pulse" />
+      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />
+      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-[80px]" />
 
       <div className="relative z-10 w-full max-w-2xl">
         {/* Progress */}
@@ -355,7 +360,10 @@ export default function Assessment() {
         {/* Skip option */}
         <div className="text-center mt-4">
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => {
+              localStorage.setItem("neuroaura_assessment_done", "true");
+              navigate("/dashboard");
+            }}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Skip for now (limited features)

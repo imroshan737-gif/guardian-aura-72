@@ -1,14 +1,12 @@
-import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, User, ArrowRight, Fingerprint, Eye, EyeOff } from "lucide-react";
+import ParticleBackground from "@/components/ParticleBackground";
 import GlassCard from "@/components/GlassCard";
 import NeonInput from "@/components/NeonInput";
 import NeonButton from "@/components/NeonButton";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-
-// Lazy load particle background
-const ParticleBackground = lazy(() => import("@/components/ParticleBackground"));
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -32,7 +30,13 @@ const Auth = () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (mounted && session) {
-          navigate("/dashboard", { replace: true });
+          // Check if user has completed assessment
+          const hasCompletedAssessment = localStorage.getItem("neuroaura_assessment_done");
+          if (hasCompletedAssessment) {
+            navigate("/dashboard", { replace: true });
+          } else {
+            navigate("/assessment", { replace: true });
+          }
         }
       } finally {
         if (mounted) {
@@ -55,8 +59,17 @@ const Auth = () => {
           localStorage.setItem("neuroaura_email", session.user.email);
         }
         
-        // Immediate navigation
-        navigate(isLogin ? "/dashboard" : "/assessment", { replace: true });
+        // For new signups, always go to assessment
+        // For logins, check if assessment was done
+        const hasCompletedAssessment = localStorage.getItem("neuroaura_assessment_done");
+        
+        if (!isLogin || !hasCompletedAssessment) {
+          // New signup or no assessment done - go to assessment
+          navigate("/assessment", { replace: true });
+        } else {
+          // Login with assessment done - go to dashboard
+          navigate("/dashboard", { replace: true });
+        }
       }
     });
 
@@ -101,7 +114,7 @@ const Auth = () => {
           email: formData.email,
           password: formData.password,
           options: {
-            emailRedirectTo: `${window.location.origin}/dashboard`,
+            emailRedirectTo: `${window.location.origin}/assessment`,
             data: {
               name: formData.name,
             }
@@ -131,7 +144,7 @@ const Auth = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/assessment`,
         }
       });
 
@@ -157,9 +170,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-      <Suspense fallback={null}>
-        <ParticleBackground />
-      </Suspense>
+      <ParticleBackground />
 
       {/* Simplified ambient glow effects */}
       <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />

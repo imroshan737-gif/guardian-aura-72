@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, lazy, Suspense, memo } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { 
   Brain, 
@@ -12,29 +12,32 @@ import {
   Bell,
   Search,
   ChevronRight,
-  TrendingUp
+  TrendingUp,
+  Trophy
 } from "lucide-react";
+import ParticleBackground from "@/components/ParticleBackground";
 import GlassCard from "@/components/GlassCard";
 import StressAura from "@/components/StressAura";
 import DigitalTwin from "@/components/DigitalTwin";
 import VitalsTile from "@/components/VitalsTile";
 import AIGuardianOrb from "@/components/AIGuardianOrb";
 import InterventionCard from "@/components/InterventionCard";
+import EmotionalTimeline from "@/components/EmotionalTimeline";
 import DemoBadge from "@/components/DemoBadge";
+import ProfileSheet from "@/components/ProfileSheet";
+import SettingsSheet from "@/components/SettingsSheet";
+import NotificationsSheet from "@/components/NotificationsSheet";
+import ImprovementTasks from "@/components/ImprovementTasks";
+import SessionGuide from "@/components/SessionGuide";
+import AIChat from "@/components/AIChat";
+import SearchDialog from "@/components/SearchDialog";
+import AllSessionsSheet from "@/components/AllSessionsSheet";
+import AchievementsSheet from "@/components/AchievementsSheet";
+import SessionFeedback from "@/components/SessionFeedback";
 import { useRealtimeVitals } from "@/hooks/useRealtimeVitals";
+import { usePoints } from "@/hooks/usePoints";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
-
-// Lazy load heavy components
-const ParticleBackground = lazy(() => import("@/components/ParticleBackground"));
-const EmotionalTimeline = lazy(() => import("@/components/EmotionalTimeline"));
-const ProfileSheet = lazy(() => import("@/components/ProfileSheet"));
-const SettingsSheet = lazy(() => import("@/components/SettingsSheet"));
-const NotificationsSheet = lazy(() => import("@/components/NotificationsSheet"));
-const ImprovementTasks = lazy(() => import("@/components/ImprovementTasks"));
-const SessionGuide = lazy(() => import("@/components/SessionGuide"));
-const AIChat = lazy(() => import("@/components/AIChat"));
-const SearchDialog = lazy(() => import("@/components/SearchDialog"));
 
 // Memoized vitals display
 const VitalsSection = memo(({ 
@@ -77,11 +80,17 @@ const Dashboard = () => {
     baseEnergy: 65,
   });
 
+  const { points, addPoints, achievements } = usePoints();
+
   const [showGuardianChat, setShowGuardianChat] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showAllSessions, setShowAllSessions] = useState(false);
+  const [showAchievements, setShowAchievements] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [completedSession, setCompletedSession] = useState<{ title: string; type: string } | null>(null);
   const [improvementSheet, setImprovementSheet] = useState<{
     open: boolean;
     type: "stress" | "focus" | "energy" | "sleep" | "mood";
@@ -126,6 +135,25 @@ const Dashboard = () => {
     setSessionGuide({ open: true, type, title, duration });
   }, []);
   
+  const handleSessionComplete = useCallback((title: string, type: string) => {
+    setCompletedSession({ title, type });
+    setShowFeedback(true);
+  }, []);
+
+  const handleFeedbackSubmit = useCallback((rating: number, feedback: string) => {
+    // Award points based on session type
+    const sessionPoints = completedSession?.type === "focus" ? 25 : completedSession?.type === "breathe" ? 15 : 20;
+    addPoints(sessionPoints, `Completed ${completedSession?.title}`);
+    
+    setShowFeedback(false);
+    setCompletedSession(null);
+    
+    toast({
+      title: "Session Complete! 🎉",
+      description: `+${sessionPoints} points earned. Keep up the great work!`,
+    });
+  }, [completedSession, addPoints]);
+  
   const handleImprove = useCallback((type: "stress" | "focus" | "energy" | "sleep" | "mood") => {
     setImprovementSheet({ open: true, type });
   }, []);
@@ -142,9 +170,7 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
-      <Suspense fallback={null}>
-        <ParticleBackground />
-      </Suspense>
+      <ParticleBackground />
       
       {isDemo && <DemoBadge onExit={handleExitDemo} />}
 
@@ -161,6 +187,15 @@ const Dashboard = () => {
         </button>
 
         <div className="flex items-center gap-4">
+          {/* Points Display */}
+          <button 
+            onClick={() => setShowAchievements(true)}
+            className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-lg border border-amber-500/30 hover:border-amber-500/50 transition-colors"
+          >
+            <Trophy className="w-4 h-4 text-amber-400" />
+            <span className="text-sm font-orbitron text-amber-400">{points}</span>
+          </button>
+          
           <button onClick={() => setShowSearch(true)} className="hidden md:flex items-center gap-2 px-4 py-2 bg-muted/30 rounded-xl border border-border/30 hover:border-primary/30 transition-colors">
             <Search className="w-4 h-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">Search...</span>
@@ -204,7 +239,7 @@ const Dashboard = () => {
                 </p>
               </div>
               <div className="flex gap-3 mt-6">
-                {[{ label: "Breathe", type: "breathe" as const, duration: 60 }, { label: "Focus", type: "focus" as const, duration: 1500 }, { label: "Rest", type: "rest" as const, duration: 300 }].map((a) => (
+                {[{ label: "Breathe", type: "breathe" as const, duration: 60 }, { label: "Focus", type: "focus" as const, duration: 900 }, { label: "Rest", type: "rest" as const, duration: 300 }].map((a) => (
                   <button key={a.label} onClick={() => handleStartSession(a.type, `${a.label} Session`, a.duration)} className="px-4 py-2 rounded-lg bg-muted/30 border border-border/30 text-sm font-orbitron text-muted-foreground hover:text-primary hover:border-primary/30 transition-all">
                     {a.label}
                   </button>
@@ -217,7 +252,12 @@ const Dashboard = () => {
           <div className="col-span-12 lg:col-span-3 space-y-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-orbitron uppercase tracking-wider text-muted-foreground">Interventions</h3>
-              <button className="text-xs text-primary hover:text-primary/80 flex items-center gap-1">View All <ChevronRight className="w-3 h-3" /></button>
+              <button 
+                onClick={() => setShowAllSessions(true)}
+                className="text-xs text-primary hover:text-primary/80 flex items-center gap-1"
+              >
+                View All <ChevronRight className="w-3 h-3" />
+              </button>
             </div>
             
             {/* What You Need Section */}
@@ -232,7 +272,7 @@ const Dashboard = () => {
             </div>
 
             <InterventionCard title="Quick Breathe" description="30-second calming breath" duration="30 sec" icon={Leaf} type="micro" onStart={() => handleStartSession("breathe", "Quick Breathe", 30)} />
-            <InterventionCard title="Deep Focus" description="Pomodoro timer" duration="25 min" icon={Target} type="focus" onStart={() => handleStartSession("focus", "Deep Focus", 1500)} />
+            <InterventionCard title="Deep Focus" description="Pomodoro timer" duration="15 min" icon={Target} type="focus" onStart={() => handleStartSession("focus", "Deep Focus", 900)} />
             <InterventionCard title="Recovery Break" description="Guided relaxation" duration="10 min" icon={Leaf} type="recovery" onStart={() => handleStartSession("rest", "Recovery Break", 600)} />
             <InterventionCard title="Connect" description="Check in with a buddy" duration="5 min" icon={Users} type="social" onStart={() => toast({ title: "Connecting...", description: "Finding study buddies nearby." })} />
           </div>
@@ -242,9 +282,7 @@ const Dashboard = () => {
         <div className="grid grid-cols-12 gap-6 mt-6">
           <div className="col-span-12 lg:col-span-8">
             <GlassCard>
-              <Suspense fallback={<div className="h-48 flex items-center justify-center text-muted-foreground">Loading timeline...</div>}>
-                <EmotionalTimeline data={timelineData} />
-              </Suspense>
+              <EmotionalTimeline data={timelineData} />
             </GlassCard>
           </div>
           <div className="col-span-12 lg:col-span-4">
@@ -258,16 +296,38 @@ const Dashboard = () => {
         <AIGuardianOrb stressLevel={getStressState()} size="lg" onClick={() => setShowGuardianChat(!showGuardianChat)} />
       </div>
 
-      {/* Lazy loaded sheets */}
-      <Suspense fallback={null}>
-        <AIChat isOpen={showGuardianChat} onClose={() => setShowGuardianChat(false)} isDemo={isDemo} />
-        <ProfileSheet open={showProfile} onOpenChange={setShowProfile} isDemo={isDemo} userData={userData} />
-        <SettingsSheet open={showSettings} onOpenChange={setShowSettings} />
-        <NotificationsSheet open={showNotifications} onOpenChange={setShowNotifications} />
-        <ImprovementTasks open={improvementSheet.open} onOpenChange={(open) => setImprovementSheet((prev) => ({ ...prev, open }))} vitalType={improvementSheet.type} />
-        <SessionGuide open={sessionGuide.open} onOpenChange={(open) => setSessionGuide((prev) => ({ ...prev, open }))} sessionType={sessionGuide.type} title={sessionGuide.title} duration={sessionGuide.duration} />
-        <SearchDialog open={showSearch} onOpenChange={setShowSearch} onOpenProfile={() => setShowProfile(true)} onOpenSettings={() => setShowSettings(true)} onOpenNotifications={() => setShowNotifications(true)} onStartSession={handleStartSession} onImprove={handleImprove} />
-      </Suspense>
+      {/* Sheets and Dialogs */}
+      <AIChat isOpen={showGuardianChat} onClose={() => setShowGuardianChat(false)} isDemo={isDemo} />
+      <ProfileSheet open={showProfile} onOpenChange={setShowProfile} isDemo={isDemo} userData={userData} />
+      <SettingsSheet open={showSettings} onOpenChange={setShowSettings} />
+      <NotificationsSheet open={showNotifications} onOpenChange={setShowNotifications} />
+      <ImprovementTasks open={improvementSheet.open} onOpenChange={(open) => setImprovementSheet((prev) => ({ ...prev, open }))} vitalType={improvementSheet.type} />
+      <SessionGuide 
+        open={sessionGuide.open} 
+        onOpenChange={(open) => setSessionGuide((prev) => ({ ...prev, open }))} 
+        sessionType={sessionGuide.type} 
+        title={sessionGuide.title} 
+        duration={sessionGuide.duration}
+        onComplete={() => handleSessionComplete(sessionGuide.title, sessionGuide.type)}
+      />
+      <SearchDialog open={showSearch} onOpenChange={setShowSearch} onOpenProfile={() => setShowProfile(true)} onOpenSettings={() => setShowSettings(true)} onOpenNotifications={() => setShowNotifications(true)} onStartSession={handleStartSession} onImprove={handleImprove} />
+      <AllSessionsSheet 
+        open={showAllSessions} 
+        onOpenChange={setShowAllSessions} 
+        onStartSession={handleStartSession}
+      />
+      <AchievementsSheet 
+        open={showAchievements} 
+        onOpenChange={setShowAchievements}
+        points={points}
+        achievements={achievements}
+      />
+      <SessionFeedback
+        open={showFeedback}
+        onOpenChange={setShowFeedback}
+        sessionTitle={completedSession?.title || ""}
+        onSubmit={handleFeedbackSubmit}
+      />
     </div>
   );
 };
