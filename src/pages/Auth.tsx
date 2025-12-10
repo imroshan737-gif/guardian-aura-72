@@ -1,12 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { Mail, Lock, User, ArrowRight, Fingerprint, Eye, EyeOff } from "lucide-react";
-import ParticleBackground from "@/components/ParticleBackground";
 import GlassCard from "@/components/GlassCard";
 import NeonInput from "@/components/NeonInput";
 import NeonButton from "@/components/NeonButton";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+
+// Lazy load particle background
+const ParticleBackground = lazy(() => import("@/components/ParticleBackground"));
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showVerified, setShowVerified] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -23,22 +26,47 @@ const Auth = () => {
 
   // Check if already logged in
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/dashboard");
+    let mounted = true;
+    
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (mounted && session) {
+          navigate("/dashboard", { replace: true });
+        }
+      } finally {
+        if (mounted) {
+          setIsCheckingAuth(false);
+        }
       }
-    });
+    };
+
+    checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate(event === 'SIGNED_IN' && !isLogin ? "/assessment" : "/dashboard");
+      if (!mounted) return;
+      
+      if (session && event === 'SIGNED_IN') {
+        // Store user info
+        if (session.user?.user_metadata?.name) {
+          localStorage.setItem("neuroaura_name", session.user.user_metadata.name);
+        }
+        if (session.user?.email) {
+          localStorage.setItem("neuroaura_email", session.user.email);
+        }
+        
+        // Immediate navigation
+        navigate(isLogin ? "/dashboard" : "/assessment", { replace: true });
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate, isLogin]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.email || !formData.password) {
@@ -57,12 +85,11 @@ const Auth = () => {
 
         if (error) throw error;
 
+        // Quick verified animation
         setShowVerified(true);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        
-        toast.success("Welcome back to NeuroAura", {
-          description: "Your AI Guardian is now online.",
-        });
+        setTimeout(() => {
+          toast.success("Welcome back to NeuroAura");
+        }, 500);
       } else {
         if (!formData.name) {
           toast.error("Please enter your name");
@@ -88,21 +115,18 @@ const Auth = () => {
         localStorage.setItem("neuroaura_email", formData.email);
 
         setShowVerified(true);
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-        
-        toast.success("Welcome to NeuroAura", {
-          description: "Let's set up your wellness baseline.",
-        });
+        setTimeout(() => {
+          toast.success("Welcome to NeuroAura");
+        }, 500);
       }
     } catch (error: any) {
       console.error("Auth error:", error);
       toast.error(error.message || "Authentication failed");
-    } finally {
       setIsLoading(false);
     }
-  };
+  }, [formData, isLogin]);
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignIn = useCallback(async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -116,59 +140,65 @@ const Auth = () => {
       console.error("Google sign in error:", error);
       toast.error(error.message || "Failed to sign in with Google");
     }
-  };
+  }, []);
+
+  // Show loading while checking auth
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border border-primary/30 animate-pulse">
+            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary to-secondary" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <ParticleBackground />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+      <Suspense fallback={null}>
+        <ParticleBackground />
+      </Suspense>
 
-      {/* Ambient glow effects */}
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: "1s" }} />
+      {/* Simplified ambient glow effects */}
+      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-[80px]" />
+      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-[80px]" />
 
       {/* Verified overlay */}
       {showVerified && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm animate-fade-up">
-          <div className="text-center space-y-6">
-            <div className="relative mx-auto w-24 h-24">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95">
+          <div className="text-center space-y-4">
+            <div className="relative mx-auto w-20 h-20">
               <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-              <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <Fingerprint className="w-12 h-12 text-primary-foreground" />
+              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <Fingerprint className="w-10 h-10 text-primary-foreground" />
               </div>
             </div>
-            <h2 className="text-2xl font-orbitron font-bold neon-text">Identity Verified</h2>
-            <p className="text-muted-foreground">Initializing your AI Guardian...</p>
-            <div className="flex justify-center gap-1">
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="w-2 h-2 rounded-full bg-primary animate-pulse"
-                  style={{ animationDelay: `${i * 0.2}s` }}
-                />
-              ))}
-            </div>
+            <h2 className="text-xl font-orbitron font-bold neon-text">Identity Verified</h2>
+            <p className="text-sm text-muted-foreground">Initializing your AI Guardian...</p>
           </div>
         </div>
       )}
 
       {/* Main auth card */}
-      <GlassCard className="w-full max-w-md relative z-10 animate-scale-in" glow>
+      <GlassCard className="w-full max-w-md relative z-10" glow>
         {/* Logo/Brand */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 mb-4">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary animate-pulse" />
+        <div className="text-center mb-6">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 mb-3">
+            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-secondary" />
           </div>
           <h1 className="text-2xl font-orbitron font-bold text-gradient">NeuroAura</h1>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-sm text-muted-foreground mt-1">
             Your Proactive Mental Wellness Guardian
           </p>
         </div>
 
         {/* Toggle Login/Signup */}
-        <div className="flex gap-2 p-1 bg-muted/30 rounded-xl mb-6">
+        <div className="flex gap-2 p-1 bg-muted/30 rounded-xl mb-5">
           <button
             onClick={() => setIsLogin(true)}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-orbitron transition-all ${
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-orbitron transition-colors ${
               isLogin
                 ? "bg-primary/20 text-primary border border-primary/30"
                 : "text-muted-foreground hover:text-foreground"
@@ -178,7 +208,7 @@ const Auth = () => {
           </button>
           <button
             onClick={() => setIsLogin(false)}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-orbitron transition-all ${
+            className={`flex-1 py-2 px-4 rounded-lg text-sm font-orbitron transition-colors ${
               !isLogin
                 ? "bg-primary/20 text-primary border border-primary/30"
                 : "text-muted-foreground hover:text-foreground"
@@ -251,7 +281,7 @@ const Auth = () => {
         </form>
 
         {/* Divider */}
-        <div className="relative my-6">
+        <div className="relative my-5">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-border/50" />
           </div>
@@ -289,9 +319,9 @@ const Auth = () => {
         </NeonButton>
 
         {/* Biometric hint */}
-        <div className="mt-6 pt-6 border-t border-border/30">
-          <button className="w-full flex items-center justify-center gap-3 py-3 text-muted-foreground hover:text-primary transition-colors group">
-            <Fingerprint className="w-6 h-6 group-hover:scale-110 transition-transform" />
+        <div className="mt-5 pt-5 border-t border-border/30">
+          <button className="w-full flex items-center justify-center gap-3 py-2 text-muted-foreground hover:text-primary transition-colors group">
+            <Fingerprint className="w-5 h-5 group-hover:scale-110 transition-transform" />
             <span className="text-sm">Enable Biometric Login</span>
           </button>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 interface Vitals {
   stress: number;
@@ -18,7 +18,7 @@ export function useRealtimeVitals(options: UseRealtimeVitalsOptions = {}) {
     baseStress = 35,
     baseFocus = 75,
     baseEnergy = 65,
-    updateInterval = 3000,
+    updateInterval = 5000, // Increased interval for performance
   } = options;
 
   const [vitals, setVitals] = useState<Vitals>({
@@ -27,27 +27,37 @@ export function useRealtimeVitals(options: UseRealtimeVitalsOptions = {}) {
     energy: baseEnergy,
   });
 
-  const [typingSpeed, setTypingSpeed] = useState(0);
-  const [lastActivity, setLastActivity] = useState(Date.now());
+  const typingSpeedRef = useRef(0);
+  const lastActivityRef = useRef(Date.now());
+  const isVisibleRef = useRef(true);
 
   // Track user typing activity
   const trackTyping = useCallback((wpm: number) => {
-    setTypingSpeed(wpm);
-    setLastActivity(Date.now());
+    typingSpeedRef.current = wpm;
+    lastActivityRef.current = Date.now();
   }, []);
 
-  // Track user clicks/activity
+  // Track user clicks/activity - throttled
   const trackActivity = useCallback(() => {
-    setLastActivity(Date.now());
+    lastActivityRef.current = Date.now();
   }, []);
 
   useEffect(() => {
+    // Visibility change handler
+    const handleVisibilityChange = () => {
+      isVisibleRef.current = !document.hidden;
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     const interval = setInterval(() => {
+      // Skip updates when tab is hidden
+      if (!isVisibleRef.current) return;
+
       const now = Date.now();
-      const idleTime = (now - lastActivity) / 1000; // seconds
+      const idleTime = (now - lastActivityRef.current) / 1000;
+      const typingSpeed = typingSpeedRef.current;
       
       setVitals((prev) => {
-        // Calculate stress based on typing speed and activity
         let stressChange = 0;
         let focusChange = 0;
         let energyChange = 0;
@@ -73,12 +83,12 @@ export function useRealtimeVitals(options: UseRealtimeVitalsOptions = {}) {
           focusChange -= 1;
         }
 
-        // Add some natural variation
-        const variation = (Math.random() - 0.5) * 4;
+        // Smaller variation for smoother updates
+        const variation = (Math.random() - 0.5) * 2;
 
-        const newStress = Math.min(100, Math.max(0, prev.stress + stressChange + variation * 0.5));
-        const newFocus = Math.min(100, Math.max(0, prev.focus + focusChange + variation * 0.3));
-        const newEnergy = Math.min(100, Math.max(0, prev.energy + energyChange + variation * 0.2));
+        const newStress = Math.min(100, Math.max(0, prev.stress + stressChange + variation * 0.3));
+        const newFocus = Math.min(100, Math.max(0, prev.focus + focusChange + variation * 0.2));
+        const newEnergy = Math.min(100, Math.max(0, prev.energy + energyChange + variation * 0.1));
 
         return {
           stress: Math.round(newStress),
@@ -88,21 +98,31 @@ export function useRealtimeVitals(options: UseRealtimeVitalsOptions = {}) {
       });
     }, updateInterval);
 
-    return () => clearInterval(interval);
-  }, [typingSpeed, lastActivity, updateInterval]);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [updateInterval]);
 
-  // Add global activity listeners
+  // Throttled activity listeners
   useEffect(() => {
-    const handleActivity = () => trackActivity();
+    let throttleTimer: NodeJS.Timeout | null = null;
     
-    window.addEventListener("mousemove", handleActivity);
-    window.addEventListener("click", handleActivity);
-    window.addEventListener("scroll", handleActivity);
+    const throttledActivity = () => {
+      if (throttleTimer) return;
+      throttleTimer = setTimeout(() => {
+        trackActivity();
+        throttleTimer = null;
+      }, 1000);
+    };
+    
+    window.addEventListener("mousemove", throttledActivity, { passive: true });
+    window.addEventListener("click", throttledActivity, { passive: true });
 
     return () => {
-      window.removeEventListener("mousemove", handleActivity);
-      window.removeEventListener("click", handleActivity);
-      window.removeEventListener("scroll", handleActivity);
+      window.removeEventListener("mousemove", throttledActivity);
+      window.removeEventListener("click", throttledActivity);
+      if (throttleTimer) clearTimeout(throttleTimer);
     };
   }, [trackActivity]);
 

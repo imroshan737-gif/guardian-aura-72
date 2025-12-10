@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense, memo } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { 
   Brain, 
@@ -14,25 +14,57 @@ import {
   ChevronRight,
   TrendingUp
 } from "lucide-react";
-import ParticleBackground from "@/components/ParticleBackground";
 import GlassCard from "@/components/GlassCard";
 import StressAura from "@/components/StressAura";
 import DigitalTwin from "@/components/DigitalTwin";
 import VitalsTile from "@/components/VitalsTile";
 import AIGuardianOrb from "@/components/AIGuardianOrb";
 import InterventionCard from "@/components/InterventionCard";
-import EmotionalTimeline from "@/components/EmotionalTimeline";
 import DemoBadge from "@/components/DemoBadge";
-import ProfileSheet from "@/components/ProfileSheet";
-import SettingsSheet from "@/components/SettingsSheet";
-import NotificationsSheet from "@/components/NotificationsSheet";
-import ImprovementTasks from "@/components/ImprovementTasks";
-import SessionGuide from "@/components/SessionGuide";
-import AIChat from "@/components/AIChat";
-import SearchDialog from "@/components/SearchDialog";
 import { useRealtimeVitals } from "@/hooks/useRealtimeVitals";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
+
+// Lazy load heavy components
+const ParticleBackground = lazy(() => import("@/components/ParticleBackground"));
+const EmotionalTimeline = lazy(() => import("@/components/EmotionalTimeline"));
+const ProfileSheet = lazy(() => import("@/components/ProfileSheet"));
+const SettingsSheet = lazy(() => import("@/components/SettingsSheet"));
+const NotificationsSheet = lazy(() => import("@/components/NotificationsSheet"));
+const ImprovementTasks = lazy(() => import("@/components/ImprovementTasks"));
+const SessionGuide = lazy(() => import("@/components/SessionGuide"));
+const AIChat = lazy(() => import("@/components/AIChat"));
+const SearchDialog = lazy(() => import("@/components/SearchDialog"));
+
+// Memoized vitals display
+const VitalsSection = memo(({ 
+  vitals, 
+  onImprove 
+}: { 
+  vitals: { stress: number; focus: number; energy: number }; 
+  onImprove: (type: "stress" | "focus" | "energy") => void;
+}) => (
+  <div className="col-span-12 lg:col-span-3 space-y-4">
+    <h3 className="text-sm font-orbitron uppercase tracking-wider text-muted-foreground mb-4">Live Vitals</h3>
+    {[
+      { title: "Stress Score", value: vitals.stress, unit: "%", icon: Brain, color: "violet" as const, type: "stress" as const },
+      { title: "Focus Level", value: vitals.focus, unit: "%", icon: Target, color: "green" as const, type: "focus" as const },
+      { title: "Energy Level", value: vitals.energy, unit: "%", icon: Zap, color: "amber" as const, type: "energy" as const },
+    ].map((vital) => (
+      <div key={vital.title} className="relative group">
+        <VitalsTile title={vital.title} value={vital.value} unit={vital.unit} icon={vital.icon} trend="stable" color={vital.color} />
+        <button 
+          onClick={() => onImprove(vital.type)} 
+          className="absolute top-2 right-2 px-2 py-1 rounded-md bg-primary/20 text-primary text-xs font-orbitron opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1"
+        >
+          <TrendingUp className="w-3 h-3" /> Improve
+        </button>
+      </div>
+    ))}
+  </div>
+));
+
+VitalsSection.displayName = "VitalsSection";
 
 const Dashboard = () => {
   const [searchParams] = useSearchParams();
@@ -80,38 +112,44 @@ const Dashboard = () => {
     { time: "8PM", value: 35 },
   ];
 
-  const getStressState = () => {
+  const getStressState = useCallback(() => {
     if (vitals.stress <= 20) return "calm";
     if (vitals.stress <= 40) return "balanced";
     if (vitals.stress <= 60) return "rising";
     if (vitals.stress <= 80) return "high";
     return "critical";
-  };
+  }, [vitals.stress]);
 
-  const handleExitDemo = () => navigate("/");
-  const handleStartSession = (type: "breathe" | "focus" | "rest", title: string, duration: number) => {
+  const handleExitDemo = useCallback(() => navigate("/"), [navigate]);
+  
+  const handleStartSession = useCallback((type: "breathe" | "focus" | "rest", title: string, duration: number) => {
     setSessionGuide({ open: true, type, title, duration });
-  };
-  const handleImprove = (type: "stress" | "focus" | "energy" | "sleep" | "mood") => {
+  }, []);
+  
+  const handleImprove = useCallback((type: "stress" | "focus" | "energy" | "sleep" | "mood") => {
     setImprovementSheet({ open: true, type });
-  };
-  const handleEmergencySOS = () => {
+  }, []);
+  
+  const handleEmergencySOS = useCallback(() => {
     toast({ title: "Emergency Support Activated", description: "Connecting you to crisis resources.", variant: "destructive" });
-  };
+  }, []);
 
-  const getInitials = () => {
+  const getInitials = useCallback(() => {
     if (isDemo) return "DS";
     if (userData.name) return userData.name.split(" ").map(n => n[0]).join("").toUpperCase();
     return "?";
-  };
+  }, [isDemo, userData.name]);
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <ParticleBackground />
+    <div className="min-h-screen relative overflow-hidden bg-background">
+      <Suspense fallback={null}>
+        <ParticleBackground />
+      </Suspense>
+      
       {isDemo && <DemoBadge onExit={handleExitDemo} />}
 
       {/* Top Navigation */}
-      <nav className="relative z-20 flex items-center justify-between px-6 py-4 border-b border-border/30 backdrop-blur-sm">
+      <nav className="relative z-20 flex items-center justify-between px-6 py-4 border-b border-border/30 bg-background/50 backdrop-blur-sm">
         <button onClick={() => navigate("/dashboard")} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border border-primary/30">
             <div className="w-4 h-4 rounded-full bg-gradient-to-br from-primary to-secondary" />
@@ -129,7 +167,7 @@ const Dashboard = () => {
           </button>
           <button onClick={() => setShowNotifications(true)} className="relative p-2 rounded-xl bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
             <Bell className="w-5 h-5 text-muted-foreground" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full animate-pulse" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
           </button>
           <button onClick={() => setShowSettings(true)} className="p-2 rounded-xl bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
             <Settings className="w-5 h-5 text-muted-foreground" />
@@ -143,39 +181,14 @@ const Dashboard = () => {
       {/* Main Content */}
       <div className="relative z-10 p-6 max-w-[1600px] mx-auto">
         <div className="grid grid-cols-12 gap-6">
-          {/* Left Panel - Live Vitals (Stress, Focus, Energy only) */}
-          <div className="col-span-12 lg:col-span-3 space-y-4">
-            <h3 className="text-sm font-orbitron uppercase tracking-wider text-muted-foreground mb-4">Live Vitals</h3>
-            {[
-              { title: "Stress Score", value: vitals.stress, unit: "%", icon: Brain, color: "violet" as const, type: "stress" as const },
-              { title: "Focus Level", value: vitals.focus, unit: "%", icon: Target, color: "green" as const, type: "focus" as const },
-              { title: "Energy Level", value: vitals.energy, unit: "%", icon: Zap, color: "amber" as const, type: "energy" as const },
-            ].map((vital) => (
-              <div key={vital.title} className="relative group">
-                <VitalsTile title={vital.title} value={vital.value} unit={vital.unit} icon={vital.icon} trend="stable" color={vital.color} />
-                <button onClick={() => handleImprove(vital.type)} className="absolute top-2 right-2 px-2 py-1 rounded-md bg-primary/20 text-primary text-xs font-orbitron opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" /> Improve
-                </button>
-              </div>
-            ))}
-
-            {/* What You Need Section */}
-            <div className="mt-6 pt-4 border-t border-border/30">
-              <h3 className="text-sm font-orbitron uppercase tracking-wider text-muted-foreground mb-4">What You Need</h3>
-              <div className="relative group">
-                <VitalsTile title="Sleep Quality" value={7.5} unit="hrs" icon={Moon} trend="up" color="violet" />
-                <button onClick={() => handleImprove("sleep")} className="absolute top-2 right-2 px-2 py-1 rounded-md bg-violet-500/20 text-violet-400 text-xs font-orbitron opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" /> Improve
-                </button>
-              </div>
-            </div>
-          </div>
+          {/* Left Panel - Live Vitals */}
+          <VitalsSection vitals={vitals} onImprove={handleImprove} />
 
           {/* Center Panel */}
           <div className="col-span-12 lg:col-span-6">
             <GlassCard className="h-full min-h-[500px] flex flex-col items-center justify-center relative overflow-visible">
               <div className="absolute top-4 left-4 flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-full border border-primary/30">
-                <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                <div className="w-2 h-2 rounded-full bg-primary" />
                 <span className="text-xs font-orbitron text-primary uppercase tracking-wider">System Active</span>
               </div>
               <div className="relative flex items-center justify-center">
@@ -192,7 +205,7 @@ const Dashboard = () => {
               </div>
               <div className="flex gap-3 mt-6">
                 {[{ label: "Breathe", type: "breathe" as const, duration: 60 }, { label: "Focus", type: "focus" as const, duration: 1500 }, { label: "Rest", type: "rest" as const, duration: 300 }].map((a) => (
-                  <button key={a.label} onClick={() => handleStartSession(a.type, `${a.label} Session`, a.duration)} className="px-4 py-2 rounded-lg bg-muted/30 border border-border/30 text-sm font-orbitron text-muted-foreground hover:text-primary hover:border-primary/30 transition-all hover:scale-105">
+                  <button key={a.label} onClick={() => handleStartSession(a.type, `${a.label} Session`, a.duration)} className="px-4 py-2 rounded-lg bg-muted/30 border border-border/30 text-sm font-orbitron text-muted-foreground hover:text-primary hover:border-primary/30 transition-all">
                     {a.label}
                   </button>
                 ))}
@@ -206,6 +219,18 @@ const Dashboard = () => {
               <h3 className="text-sm font-orbitron uppercase tracking-wider text-muted-foreground">Interventions</h3>
               <button className="text-xs text-primary hover:text-primary/80 flex items-center gap-1">View All <ChevronRight className="w-3 h-3" /></button>
             </div>
+            
+            {/* What You Need Section */}
+            <div className="mb-4">
+              <h4 className="text-xs font-orbitron uppercase tracking-wider text-muted-foreground/70 mb-2">What You Need</h4>
+              <div className="relative group">
+                <VitalsTile title="Sleep Quality" value={7.5} unit="hrs" icon={Moon} trend="up" color="violet" />
+                <button onClick={() => handleImprove("sleep")} className="absolute top-2 right-2 px-2 py-1 rounded-md bg-violet-500/20 text-violet-400 text-xs font-orbitron opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                  <TrendingUp className="w-3 h-3" /> Improve
+                </button>
+              </div>
+            </div>
+
             <InterventionCard title="Quick Breathe" description="30-second calming breath" duration="30 sec" icon={Leaf} type="micro" onStart={() => handleStartSession("breathe", "Quick Breathe", 30)} />
             <InterventionCard title="Deep Focus" description="Pomodoro timer" duration="25 min" icon={Target} type="focus" onStart={() => handleStartSession("focus", "Deep Focus", 1500)} />
             <InterventionCard title="Recovery Break" description="Guided relaxation" duration="10 min" icon={Leaf} type="recovery" onStart={() => handleStartSession("rest", "Recovery Break", 600)} />
@@ -215,7 +240,13 @@ const Dashboard = () => {
 
         {/* Bottom Section */}
         <div className="grid grid-cols-12 gap-6 mt-6">
-          <div className="col-span-12 lg:col-span-8"><GlassCard><EmotionalTimeline data={timelineData} /></GlassCard></div>
+          <div className="col-span-12 lg:col-span-8">
+            <GlassCard>
+              <Suspense fallback={<div className="h-48 flex items-center justify-center text-muted-foreground">Loading timeline...</div>}>
+                <EmotionalTimeline data={timelineData} />
+              </Suspense>
+            </GlassCard>
+          </div>
           <div className="col-span-12 lg:col-span-4">
             <InterventionCard title="Emergency SOS" description="Immediate AI crisis support" duration="Instant" icon={AlertTriangle} type="emergency" className="h-full" onStart={handleEmergencySOS} />
           </div>
@@ -227,16 +258,16 @@ const Dashboard = () => {
         <AIGuardianOrb stressLevel={getStressState()} size="lg" onClick={() => setShowGuardianChat(!showGuardianChat)} />
       </div>
 
-      {/* AI Chat */}
-      <AIChat isOpen={showGuardianChat} onClose={() => setShowGuardianChat(false)} isDemo={isDemo} />
-
-      {/* Sheets */}
-      <ProfileSheet open={showProfile} onOpenChange={setShowProfile} isDemo={isDemo} userData={userData} />
-      <SettingsSheet open={showSettings} onOpenChange={setShowSettings} />
-      <NotificationsSheet open={showNotifications} onOpenChange={setShowNotifications} />
-      <ImprovementTasks open={improvementSheet.open} onOpenChange={(open) => setImprovementSheet((prev) => ({ ...prev, open }))} vitalType={improvementSheet.type} />
-      <SessionGuide open={sessionGuide.open} onOpenChange={(open) => setSessionGuide((prev) => ({ ...prev, open }))} sessionType={sessionGuide.type} title={sessionGuide.title} duration={sessionGuide.duration} />
-      <SearchDialog open={showSearch} onOpenChange={setShowSearch} onOpenProfile={() => setShowProfile(true)} onOpenSettings={() => setShowSettings(true)} onOpenNotifications={() => setShowNotifications(true)} onStartSession={handleStartSession} onImprove={handleImprove} />
+      {/* Lazy loaded sheets */}
+      <Suspense fallback={null}>
+        <AIChat isOpen={showGuardianChat} onClose={() => setShowGuardianChat(false)} isDemo={isDemo} />
+        <ProfileSheet open={showProfile} onOpenChange={setShowProfile} isDemo={isDemo} userData={userData} />
+        <SettingsSheet open={showSettings} onOpenChange={setShowSettings} />
+        <NotificationsSheet open={showNotifications} onOpenChange={setShowNotifications} />
+        <ImprovementTasks open={improvementSheet.open} onOpenChange={(open) => setImprovementSheet((prev) => ({ ...prev, open }))} vitalType={improvementSheet.type} />
+        <SessionGuide open={sessionGuide.open} onOpenChange={(open) => setSessionGuide((prev) => ({ ...prev, open }))} sessionType={sessionGuide.type} title={sessionGuide.title} duration={sessionGuide.duration} />
+        <SearchDialog open={showSearch} onOpenChange={setShowSearch} onOpenProfile={() => setShowProfile(true)} onOpenSettings={() => setShowSettings(true)} onOpenNotifications={() => setShowNotifications(true)} onStartSession={handleStartSession} onImprove={handleImprove} />
+      </Suspense>
     </div>
   );
 };

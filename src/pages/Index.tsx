@@ -1,25 +1,59 @@
 import { useNavigate } from "react-router-dom";
 import { 
   ArrowRight, 
-  Shield, 
   Brain, 
-  Heart, 
   Sparkles, 
   Activity, 
-  Users, 
   Target,
   Moon,
   Zap,
   CheckCircle,
   GraduationCap
 } from "lucide-react";
-import ParticleBackground from "@/components/ParticleBackground";
 import GlassCard from "@/components/GlassCard";
 import NeonButton from "@/components/NeonButton";
 import AIGuardianOrb from "@/components/AIGuardianOrb";
 import DemoTour from "@/components/DemoTour";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, lazy, Suspense, memo } from "react";
+
+// Lazy load particle background
+const ParticleBackground = lazy(() => import("@/components/ParticleBackground"));
+
+// Memoized feature card
+const FeatureCard = memo(({ feature, index }: { feature: any; index: number }) => (
+  <GlassCard
+    className={cn(
+      "group hover:scale-[1.01] transition-transform duration-300"
+    )}
+  >
+    <div className="flex items-start gap-4">
+      <div
+        className={cn(
+          "p-3 rounded-xl",
+          feature.color === "cyan"
+            ? "bg-primary/10 border border-primary/30"
+            : "bg-secondary/10 border border-secondary/30"
+        )}
+      >
+        <feature.icon
+          className={cn(
+            "w-6 h-6",
+            feature.color === "cyan" ? "text-primary" : "text-secondary"
+          )}
+        />
+      </div>
+      <div>
+        <h3 className="text-lg font-orbitron font-semibold mb-2 group-hover:text-primary transition-colors">
+          {feature.title}
+        </h3>
+        <p className="text-muted-foreground">{feature.description}</p>
+      </div>
+    </div>
+  </GlassCard>
+));
+
+FeatureCard.displayName = "FeatureCard";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -29,7 +63,7 @@ const Index = () => {
     {
       icon: Brain,
       title: "AI Stress Detection",
-      description: "Real-time stress monitoring with predictive analytics to prevent burnout before it happens",
+      description: "Real-time stress monitoring with predictive analytics to prevent burnout",
       color: "cyan",
     },
     {
@@ -71,18 +105,20 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      <ParticleBackground />
+    <div className="min-h-screen relative overflow-hidden bg-background">
+      <Suspense fallback={null}>
+        <ParticleBackground />
+      </Suspense>
 
-      {/* Ambient glow effects */}
-      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-[150px]" />
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[600px] bg-secondary/5 rounded-full blur-[150px]" />
+      {/* Simplified ambient glow effects */}
+      <div className="absolute top-0 left-1/4 w-[400px] h-[400px] bg-primary/3 rounded-full blur-[100px]" />
+      <div className="absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-secondary/3 rounded-full blur-[100px]" />
 
       {/* Navigation */}
       <nav className="relative z-20 flex items-center justify-between px-6 md:px-12 py-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border border-primary/30">
-            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-primary to-secondary animate-pulse" />
+            <div className="w-4 h-4 rounded-full bg-gradient-to-br from-primary to-secondary" />
           </div>
           <span className="font-orbitron font-bold text-lg text-gradient">NeuroAura</span>
         </div>
@@ -101,15 +137,15 @@ const Index = () => {
 
       {/* Hero Section */}
       <section className="relative z-10 min-h-[80vh] flex flex-col items-center justify-center px-6 text-center">
-        {/* Floating orbs */}
-        <div className="absolute left-10 top-20 opacity-30 hidden lg:block">
+        {/* Floating orbs - hidden on mobile for performance */}
+        <div className="absolute left-10 top-20 opacity-30 hidden xl:block">
           <AIGuardianOrb stressLevel="calm" size="sm" />
         </div>
-        <div className="absolute right-20 top-40 opacity-40 hidden lg:block">
+        <div className="absolute right-20 top-40 opacity-40 hidden xl:block">
           <AIGuardianOrb stressLevel="balanced" size="md" />
         </div>
 
-        <div className="max-w-4xl mx-auto space-y-8 animate-fade-up">
+        <div className="max-w-4xl mx-auto space-y-8">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30">
             <GraduationCap className="w-4 h-4 text-primary" />
@@ -171,38 +207,7 @@ const Index = () => {
 
           <div className="grid md:grid-cols-2 gap-6">
             {features.map((feature, index) => (
-              <GlassCard
-                key={feature.title}
-                className={cn(
-                  "group hover:scale-[1.02] transition-all duration-500",
-                  "animate-fade-up"
-                )}
-                style={{ animationDelay: `${index * 100}ms` } as React.CSSProperties}
-              >
-                <div className="flex items-start gap-4">
-                  <div
-                    className={cn(
-                      "p-3 rounded-xl",
-                      feature.color === "cyan"
-                        ? "bg-primary/10 border border-primary/30"
-                        : "bg-secondary/10 border border-secondary/30"
-                    )}
-                  >
-                    <feature.icon
-                      className={cn(
-                        "w-6 h-6",
-                        feature.color === "cyan" ? "text-primary" : "text-secondary"
-                      )}
-                    />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-orbitron font-semibold mb-2 group-hover:text-primary transition-colors">
-                      {feature.title}
-                    </h3>
-                    <p className="text-muted-foreground">{feature.description}</p>
-                  </div>
-                </div>
-              </GlassCard>
+              <FeatureCard key={feature.title} feature={feature} index={index} />
             ))}
           </div>
         </div>
@@ -240,10 +245,10 @@ const Index = () => {
                 description: "Follow guided interventions and track your progress over time",
                 icon: Target,
               },
-            ].map((item, index) => (
+            ].map((item) => (
               <div key={item.step} className="text-center group">
                 <div className="relative inline-flex mb-6">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 flex items-center justify-center group-hover:scale-110 transition-transform shadow-[0_0_30px_hsl(var(--primary)/0.2)]">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <item.icon className="w-8 h-8 text-primary" />
                   </div>
                   <span className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-primary text-background font-orbitron font-bold text-sm flex items-center justify-center">
