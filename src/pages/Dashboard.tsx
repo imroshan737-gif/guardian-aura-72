@@ -7,7 +7,6 @@ import {
   Moon, 
   Target, 
   Leaf, 
-  Users, 
   AlertTriangle,
   Settings,
   Bell,
@@ -19,7 +18,6 @@ import {
 import ParticleBackground from "@/components/ParticleBackground";
 import GlassCard from "@/components/GlassCard";
 import StressAura from "@/components/StressAura";
-import DigitalTwin from "@/components/DigitalTwin";
 import VitalsTile from "@/components/VitalsTile";
 import AIGuardianOrb from "@/components/AIGuardianOrb";
 import InterventionCard from "@/components/InterventionCard";
@@ -248,19 +246,47 @@ const Dashboard = () => {
                 <SnakeGame />
               </div>
               
-              <div className="relative flex items-center justify-center mt-24">
-                <StressAura level={vitals.stress} size={280} />
-                <div className="absolute"><DigitalTwin stressLevel={vitals.stress} /></div>
+              {/* Welcome Message Section */}
+              <div className="mt-24 text-center space-y-4">
+                <div className="relative">
+                  <StressAura level={vitals.stress} size={200} />
+                </div>
+                
+                <div className="space-y-2">
+                  <h2 className="text-2xl md:text-3xl font-orbitron font-bold text-gradient">
+                    Welcome Back, {userData.name?.split(" ")[0] || "Friend"}
+                  </h2>
+                  <p className="text-lg text-muted-foreground">
+                    Your current state is{" "}
+                    <span className={cn(
+                      "font-orbitron font-semibold",
+                      vitals.stress <= 20 ? "text-stress-calm" : 
+                      vitals.stress <= 40 ? "text-emerald-400" : 
+                      vitals.stress <= 60 ? "text-stress-rising" : 
+                      "text-stress-high"
+                    )}>
+                      {getStressState().charAt(0).toUpperCase() + getStressState().slice(1)}
+                    </span>
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4 mt-6 text-center">
+                  <div className="p-3 rounded-xl bg-muted/20 border border-border/30">
+                    <p className="text-2xl font-orbitron font-bold text-primary">{vitals.stress}%</p>
+                    <p className="text-xs text-muted-foreground">Stress</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-muted/20 border border-border/30">
+                    <p className="text-2xl font-orbitron font-bold text-emerald-400">{vitals.focus}%</p>
+                    <p className="text-xs text-muted-foreground">Focus</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-muted/20 border border-border/30">
+                    <p className="text-2xl font-orbitron font-bold text-amber-400">{vitals.energy}%</p>
+                    <p className="text-xs text-muted-foreground">Energy</p>
+                  </div>
+                </div>
               </div>
-              <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground">
-                  Your current state is{" "}
-                  <span className={cn("font-orbitron font-semibold", vitals.stress <= 40 ? "text-stress-calm" : vitals.stress <= 60 ? "text-stress-rising" : "text-stress-high")}>
-                    {getStressState().toUpperCase()}
-                  </span>
-                </p>
-              </div>
-              <div className="flex gap-3 mt-4">
+
+              <div className="flex gap-3 mt-6">
                 {[{ label: "Breathe", type: "breathe" as const, duration: 60 }, { label: "Focus", type: "focus" as const, duration: 900 }, { label: "Rest", type: "rest" as const, duration: 300 }].map((a) => (
                   <button key={a.label} onClick={() => handleStartSession(a.type, `${a.label} Session`, a.duration)} className="px-4 py-2 rounded-lg bg-muted/30 border border-border/30 text-sm font-orbitron text-muted-foreground hover:text-primary hover:border-primary/30 transition-all">
                     {a.label}
@@ -293,10 +319,10 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <InterventionCard title="Quick Breathe" description="30-second calming breath" duration="30 sec" icon={Leaf} type="micro" onStart={() => handleStartSession("breathe", "Quick Breathe", 30)} />
-            <InterventionCard title="Deep Focus" description="Pomodoro timer" duration="15 min" icon={Target} type="focus" onStart={() => handleStartSession("focus", "Deep Focus", 900)} />
-            <InterventionCard title="Recovery Break" description="Guided relaxation" duration="10 min" icon={Leaf} type="recovery" onStart={() => handleStartSession("rest", "Recovery Break", 600)} />
-            <InterventionCard title="Connect" description="Check in with a buddy" duration="5 min" icon={Users} type="social" onStart={() => toast({ title: "Connecting...", description: "Finding study buddies nearby." })} />
+            <InterventionCard title="Grounding Breath" description="Deep grounding breathing to calm your nervous system" duration="3 min" icon={Leaf} type="micro" onStart={() => handleStartSession("breathe", "Grounding Breath", 180)} />
+            <InterventionCard title="Shoulder & Jaw Release" description="Release tension with gentle stretches + breathing" duration="4 min" icon={Leaf} type="recovery" onStart={() => handleStartSession("rest", "Shoulder & Jaw Release", 240)} />
+            <InterventionCard title="Deep Focus" description="Pomodoro focus timer" duration="15 min" icon={Target} type="focus" onStart={() => handleStartSession("focus", "Deep Focus", 900)} />
+            <InterventionCard title="Box Breathing" description="4-4-4-4 pattern for instant calm" duration="2 min" icon={Leaf} type="micro" onStart={() => handleStartSession("breathe", "Box Breathing", 120)} />
           </div>
         </div>
 
