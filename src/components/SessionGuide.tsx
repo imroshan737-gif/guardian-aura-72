@@ -98,7 +98,7 @@ export default function SessionGuide({
     synthRef.current.speak(utterance);
   }, [isMuted]);
 
-  // Always reset to beginning when opening
+  // Always reset to beginning when opening, stop voice immediately when closing
   useEffect(() => {
     if (open) {
       setTimeLeft(duration);
@@ -107,11 +107,21 @@ export default function SessionGuide({
       setIsComplete(false);
       setHasStarted(false);
     } else {
+      // Immediately stop any ongoing speech when dialog closes
       if (synthRef.current) {
         synthRef.current.cancel();
       }
+      // Also stop running state
+      setIsRunning(false);
     }
   }, [open, duration]);
+
+  // Additional cleanup: stop voice when isRunning becomes false
+  useEffect(() => {
+    if (!isRunning && synthRef.current && !isComplete) {
+      synthRef.current.cancel();
+    }
+  }, [isRunning, isComplete]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
