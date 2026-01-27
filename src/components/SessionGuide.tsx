@@ -62,7 +62,7 @@ export default function SessionGuide({
     };
   }, []);
 
-  // Speak instruction
+  // Speak instruction with ultra-soft, soothing female voice
   const speakInstruction = useCallback((text: string) => {
     if (!synthRef.current || isMuted) return;
     
@@ -70,26 +70,44 @@ export default function SessionGuide({
     synthRef.current.cancel();
     
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.75; // Slower for soothing effect
-    utterance.pitch = 1.1; // Slightly higher for softer feminine tone
-    utterance.volume = 0.7; // Softer volume
+    utterance.rate = 0.65; // Very slow for maximum soothing effect
+    utterance.pitch = 1.2; // Higher pitch for sweeter, softer tone
+    utterance.volume = 0.5; // Very soft, gentle volume
     
-    // Try to use a soft female voice - prioritize known gentle voices
+    // Try to use the most soothing female voices available
     const voices = synthRef.current.getVoices();
-    const preferredVoice = voices.find(v => 
-      v.name.includes("Samantha") || // Apple's gentle female voice
-      v.name.includes("Victoria") ||
-      v.name.includes("Karen") ||
-      v.name.includes("Moira") ||
-      v.name.includes("Fiona") ||
-      v.name.includes("Tessa") ||
-      v.name.includes("Veena") ||
-      (v.name.includes("Female") && v.lang.startsWith("en")) ||
-      (v.name.includes("Google") && v.name.includes("Female")) ||
-      v.name.includes("Zira") || // Microsoft's female voice
-      v.name.includes("Hazel") ||
-      v.name.includes("Susan")
-    ) || voices.find(v => v.lang.startsWith("en") && v.name.toLowerCase().includes("female"));
+    
+    // Priority order: most soothing and singer-like voices first
+    const soothingVoiceNames = [
+      "Samantha", // Apple's gentlest female voice
+      "Karen", // Australian - very soft
+      "Moira", // Irish - melodic
+      "Fiona", // Scottish - gentle
+      "Tessa", // South African - warm
+      "Victoria", // UK - refined
+      "Veena", // Indian English - melodic
+      "Zira", // Microsoft - clear and soft
+      "Susan", // UK - gentle
+      "Hazel", // UK - warm
+      "Google UK English Female",
+      "Google US English",
+    ];
+    
+    let preferredVoice = null;
+    for (const name of soothingVoiceNames) {
+      preferredVoice = voices.find(v => v.name.includes(name));
+      if (preferredVoice) break;
+    }
+    
+    // Fallback: any female English voice
+    if (!preferredVoice) {
+      preferredVoice = voices.find(v => 
+        v.lang.startsWith("en") && 
+        (v.name.toLowerCase().includes("female") || 
+         v.name.includes("Woman") ||
+         v.name.includes("girl"))
+      );
+    }
     
     if (preferredVoice) {
       utterance.voice = preferredVoice;

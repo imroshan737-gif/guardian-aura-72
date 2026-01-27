@@ -123,11 +123,18 @@ const Dashboard = () => {
   }>({ open: false, type: "breathe", title: "", duration: 0 });
 
   const [userData, setUserData] = useState<{ name?: string; email?: string }>({});
+  const [isReturningUser, setIsReturningUser] = useState(false);
 
   useEffect(() => {
     const name = localStorage.getItem("neuroaura_name");
     const email = localStorage.getItem("neuroaura_email");
+    const hasVisitedBefore = localStorage.getItem("neuroaura_has_visited");
+    
     setUserData({ name: name || undefined, email: email || undefined });
+    setIsReturningUser(hasVisitedBefore === "true");
+    
+    // Mark as visited after first load
+    localStorage.setItem("neuroaura_has_visited", "true");
   }, []);
 
   const timelineData = [
@@ -221,7 +228,6 @@ const Dashboard = () => {
           <HeaderMusicControls />
           <button onClick={() => setShowNotifications(true)} className="relative p-2 rounded-xl bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
             <Bell className="w-5 h-5 text-muted-foreground" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
           </button>
           <button onClick={() => setShowSettings(true)} className="p-2 rounded-xl bg-muted/30 border border-border/30 hover:bg-muted/50 transition-colors">
             <Settings className="w-5 h-5 text-muted-foreground" />
@@ -240,21 +246,22 @@ const Dashboard = () => {
 
           {/* Center Panel */}
           <div className="col-span-12 lg:col-span-6">
-            <GlassCard className="h-full min-h-[500px] flex flex-col items-center justify-center relative overflow-visible">
-              {/* Snake Game */}
-              <div className="absolute top-4 left-4 right-4">
+            <GlassCard className="h-full min-h-[500px] flex flex-col items-center justify-start relative overflow-visible pt-4">
+              {/* Snake Game - Top */}
+              <div className="w-full px-4 mb-6">
                 <SnakeGame />
               </div>
               
+              {/* Stress Aura Circle - Centered */}
+              <div className="flex justify-center mb-6">
+                <StressAura level={vitals.stress} size={180} />
+              </div>
+              
               {/* Welcome Message Section */}
-              <div className="mt-24 text-center space-y-4">
-                <div className="relative">
-                  <StressAura level={vitals.stress} size={200} />
-                </div>
-                
+              <div className="text-center space-y-4">
                 <div className="space-y-2">
                   <h2 className="text-2xl md:text-3xl font-orbitron font-bold text-gradient">
-                    Welcome Back, {userData.name?.split(" ")[0] || "Friend"}
+                    {isReturningUser ? "Welcome Back" : "Welcome Buddy"}
                   </h2>
                   <p className="text-lg text-muted-foreground">
                     Your current state is{" "}
@@ -270,7 +277,7 @@ const Dashboard = () => {
                   </p>
                 </div>
                 
-                <div className="grid grid-cols-3 gap-4 mt-6 text-center">
+                <div className="grid grid-cols-3 gap-4 mt-4 text-center">
                   <div className="p-3 rounded-xl bg-muted/20 border border-border/30">
                     <p className="text-2xl font-orbitron font-bold text-primary">{vitals.stress}%</p>
                     <p className="text-xs text-muted-foreground">Stress</p>
