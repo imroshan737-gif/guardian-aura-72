@@ -5,75 +5,76 @@
 @tailwind utilities;
 @layer base {
   :root {
-    /* Deep Space Theme */
-    --background: 222 47% 4%;
-    --foreground: 210 40% 98%;
+    /* Deep navy foundation */
+    --background: 222 44% 4%;
+    --foreground: 210 30% 96%;
 
-    --card: 222 47% 8%;
-    --card-foreground: 210 40% 98%;
+    --card: 222 38% 7%;
+    --card-foreground: 210 30% 96%;
 
-    --popover: 222 47% 6%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 222 40% 6%;
+    --popover-foreground: 210 30% 96%;
 
-    /* Neon Cyan Primary */
-    --primary: 180 100% 50%;
-    --primary-foreground: 222 47% 4%;
-    --primary-glow: 180 100% 60%;
+    /* Refined cyan primary */
+    --primary: 187 92% 52%;
+    --primary-foreground: 222 47% 5%;
+    --primary-glow: 187 92% 62%;
 
-    /* Electric Violet Secondary */
-    --secondary: 263 70% 58%;
+    /* Indigo/violet secondary */
+    --secondary: 256 70% 62%;
     --secondary-foreground: 210 40% 98%;
-    --secondary-glow: 263 80% 68%;
+    --secondary-glow: 256 78% 70%;
 
-    /* Muted Space */
-    --muted: 217 33% 12%;
-    --muted-foreground: 215 20% 55%;
+    /* Muted surfaces */
+    --muted: 220 24% 11%;
+    --muted-foreground: 215 16% 62%;
 
-    /* Accent Electric Blue */
-    --accent: 217 91% 60%;
+    /* Accent blue */
+    --accent: 214 90% 60%;
     --accent-foreground: 210 40% 98%;
 
-    --destructive: 0 84% 60%;
+    --destructive: 0 76% 58%;
     --destructive-foreground: 210 40% 98%;
 
     /* Stress Level Colors */
-    --stress-calm: 180 100% 50%;
-    --stress-balanced: 142 76% 50%;
-    --stress-rising: 45 100% 50%;
-    --stress-high: 25 100% 55%;
-    --stress-critical: 0 84% 60%;
+    --stress-calm: 187 92% 52%;
+    --stress-balanced: 152 62% 46%;
+    --stress-rising: 42 92% 55%;
+    --stress-high: 24 90% 58%;
+    --stress-critical: 0 76% 58%;
 
-    --border: 217 33% 17%;
-    --input: 217 33% 12%;
-    --ring: 180 100% 50%;
+    --border: 218 24% 16%;
+    --input: 220 24% 11%;
+    --ring: 187 92% 52%;
 
-    --radius: 1rem;
+    --radius: 0.875rem;
 
-    /* Glass Effect */
-    --glass-bg: 222 47% 8% / 0.6;
-    --glass-border: 180 100% 50% / 0.2;
-    --glass-glow: 180 100% 50% / 0.15;
+    /* Surface / glass */
+    --glass-bg: 222 38% 8% / 0.72;
+    --glass-border: 210 30% 96% / 0.07;
+    --glass-glow: 187 92% 52% / 0.08;
 
     /* Gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(180 100% 50% / 0.8), hsl(263 70% 58% / 0.8));
-    --gradient-glow: radial-gradient(circle, hsl(180 100% 50% / 0.3), transparent 70%);
-    --gradient-space: radial-gradient(ellipse at bottom, hsl(222 47% 11%), hsl(222 47% 4%));
+    --gradient-primary: linear-gradient(135deg, hsl(187 92% 58%), hsl(256 70% 66%));
+    --gradient-glow: radial-gradient(circle, hsl(187 92% 52% / 0.14), transparent 70%);
+    --gradient-space: radial-gradient(ellipse 120% 80% at 50% -10%, hsl(220 42% 9%), hsl(222 44% 4%) 60%);
 
-    /* Shadows */
-    --shadow-neon: 0 0 20px hsl(180 100% 50% / 0.3), 0 0 40px hsl(180 100% 50% / 0.2);
-    --shadow-glow: 0 0 30px hsl(180 100% 50% / 0.4);
-    --shadow-card: 0 8px 32px hsl(222 47% 4% / 0.8), 0 0 1px hsl(180 100% 50% / 0.3);
+    /* Elevation — soft depth, no heavy neon */
+    --shadow-neon: 0 0 0 1px hsl(187 92% 52% / 0.18), 0 8px 24px -12px hsl(187 92% 52% / 0.35);
+    --shadow-glow: 0 10px 32px -14px hsl(187 92% 52% / 0.45);
+    --shadow-card: 0 1px 0 0 hsl(210 30% 96% / 0.04) inset, 0 16px 40px -24px hsl(222 60% 2% / 0.9);
 
     /* Sidebar */
-    --sidebar-background: 222 47% 6%;
-    --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 180 100% 50%;
-    --sidebar-primary-foreground: 222 47% 4%;
-    --sidebar-accent: 217 33% 15%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 17%;
-    --sidebar-ring: 180 100% 50%;
+    --sidebar-background: 222 40% 6%;
+    --sidebar-foreground: 210 30% 96%;
+    --sidebar-primary: 187 92% 52%;
+    --sidebar-primary-foreground: 222 47% 5%;
+    --sidebar-accent: 220 24% 13%;
+    --sidebar-accent-foreground: 210 30% 96%;
+    --sidebar-border: 218 24% 16%;
+    --sidebar-ring: 187 92% 52%;
   }
+
 }
 
 @layer base {
