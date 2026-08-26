@@ -12,39 +12,35 @@ const NeonInput = forwardRef<HTMLInputElement, NeonInputProps>(
     return (
       <div className="w-full space-y-2">
         {label && (
-          <label className="block text-sm font-medium text-muted-foreground tracking-wide uppercase font-orbitron">
+          <label className="block text-xs font-medium text-muted-foreground tracking-[0.06em] uppercase">
             {label}
           </label>
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/70 [&_svg]:w-[18px] [&_svg]:h-[18px]">
               {icon}
             </div>
           )}
           <input
             ref={ref}
             className={cn(
-              "w-full px-4 py-3 rounded-xl",
-              "bg-muted/30 border border-border/50",
-              "text-foreground placeholder:text-muted-foreground/50",
-              "font-exo tracking-wide",
-              "transition-all duration-300",
-              "focus:outline-none focus:border-primary/70",
-              "focus:shadow-[0_0_0_2px_hsl(180_100%_50%/0.2),0_0_20px_hsl(180_100%_50%/0.15)]",
-              "hover:border-primary/30",
-              icon && "pl-12",
-              error && "border-destructive/50 focus:border-destructive",
+              "w-full h-12 px-4 rounded-xl",
+              "bg-muted/40 border border-border",
+              "text-[15px] text-foreground placeholder:text-muted-foreground/45",
+              "transition-[border-color,box-shadow,background-color] duration-200",
+              "focus:outline-none focus:bg-muted/60 focus:border-primary/60",
+              "focus:shadow-[0_0_0_3px_hsl(var(--primary)/0.12)]",
+              "hover:border-foreground/20",
+              icon && "pl-11",
+              error && "border-destructive/60 focus:border-destructive focus:shadow-[0_0_0_3px_hsl(var(--destructive)/0.12)]",
               className
             )}
             {...props}
           />
-          <div className="absolute inset-0 rounded-xl pointer-events-none opacity-0 hover:opacity-100 transition-opacity">
-            <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/5 to-secondary/5" />
-          </div>
         </div>
         {error && (
-          <p className="text-sm text-destructive font-medium">{error}</p>
+          <p className="text-xs text-destructive font-medium">{error}</p>
         )}
       </div>
     );
