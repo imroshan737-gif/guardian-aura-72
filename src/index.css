@@ -85,49 +85,67 @@
   body {
     @apply bg-background text-foreground font-exo antialiased;
     background: var(--gradient-space);
+    background-attachment: fixed;
     min-height: 100vh;
+    font-feature-settings: "cv11", "ss01";
+    letter-spacing: -0.01em;
   }
 
   html {
     scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-orbitron;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: hsl(var(--primary) / 0.25);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
 @layer components {
-  /* Glass Card Effect */
+  /* Surface card — soft depth, restrained */
   .glass-card {
     @apply relative overflow-hidden rounded-2xl;
     background: hsl(var(--glass-bg));
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(16px);
     border: 1px solid hsl(var(--glass-border));
     box-shadow: var(--shadow-card);
   }
 
   .glass-card::before {
     content: '';
-    @apply absolute inset-0 pointer-events-none;
+    @apply absolute inset-x-0 top-0 h-px pointer-events-none;
     background: linear-gradient(
-      135deg,
-      hsl(180 100% 50% / 0.1) 0%,
-      transparent 50%,
-      hsl(263 70% 58% / 0.05) 100%
+      90deg,
+      transparent,
+      hsl(210 30% 96% / 0.16),
+      transparent
     );
   }
 
-  /* Neon Glow Text */
+  /* Restrained luminous text */
   .neon-text {
-    text-shadow: 
-      0 0 10px hsl(var(--primary) / 0.8),
-      0 0 20px hsl(var(--primary) / 0.6),
-      0 0 40px hsl(var(--primary) / 0.4);
+    text-shadow: 0 0 24px hsl(var(--primary) / 0.35);
   }
 
   .neon-text-secondary {
-    text-shadow: 
-      0 0 10px hsl(var(--secondary) / 0.8),
-      0 0 20px hsl(var(--secondary) / 0.6),
-      0 0 40px hsl(var(--secondary) / 0.4);
+    text-shadow: 0 0 24px hsl(var(--secondary) / 0.35);
   }
+
 
   /* Glow Border */
   .glow-border {
