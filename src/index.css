@@ -231,11 +231,11 @@
 
 @layer utilities {
   .font-orbitron {
-    font-family: 'Orbitron', sans-serif;
+    font-family: 'Sora', system-ui, sans-serif;
   }
 
   .font-exo {
-    font-family: 'Exo 2', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
   .rounded-inherit {
