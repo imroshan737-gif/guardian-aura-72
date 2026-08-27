@@ -13,8 +13,8 @@ const GlassCard = memo(({ children, className, glow = false, animate = false, st
   return (
     <div
       className={cn(
-        "glass-card p-6 transition-colors duration-300",
-        glow && "glow-border",
+        "glass-card p-6 transition-colors duration-200",
+        glow && "shadow-[var(--shadow-glow)]",
         animate && "animate-fade-up",
         className
       )}

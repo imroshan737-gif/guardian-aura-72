@@ -189,165 +189,174 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+    <div className="min-h-[100svh] flex items-center justify-center p-4 sm:p-6 relative overflow-hidden bg-background">
       <ParticleBackground />
 
-      {/* Animated orbital rings behind card */}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <div className="relative w-[700px] h-[700px] max-w-[90vw] max-h-[90vw]">
-          <div className="absolute inset-0 rounded-full border border-primary/10 animate-[spin_40s_linear_infinite]" />
-          <div className="absolute inset-12 rounded-full border border-secondary/10 animate-[spin_55s_linear_infinite_reverse]" />
-          <div className="absolute inset-24 rounded-full border border-accent/10 animate-[spin_70s_linear_infinite]" />
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-primary shadow-[0_0_20px_hsl(var(--primary))]" />
-          <div className="absolute bottom-12 right-12 w-2 h-2 rounded-full bg-secondary shadow-[0_0_15px_hsl(var(--secondary))]" />
-        </div>
-      </div>
-
-      {/* Ambient gradient orbs */}
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/10 rounded-full blur-[100px] animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-secondary/10 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '1.5s' }} />
-      <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-accent/5 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2" />
+      {/* Soft ambient depth */}
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-[420px] w-[620px] max-w-[120vw] -translate-x-1/2 rounded-full bg-primary/[0.07] blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-[-15%] right-[-10%] h-[380px] w-[380px] rounded-full bg-secondary/[0.06] blur-[120px]" />
 
       {showVerified && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95">
-          <div className="text-center space-y-4">
-            <div className="relative mx-auto w-20 h-20">
-              <div className="absolute inset-0 rounded-full bg-primary/20 animate-ping" />
-              <div className="relative w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                <div className="w-8 h-8 rounded-full bg-white/20" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm">
+          <div className="text-center space-y-5">
+            <div className="relative mx-auto w-16 h-16">
+              <div className="absolute inset-0 rounded-2xl bg-primary/15 animate-ping" />
+              <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                <div className="w-5 h-5 rounded-full bg-primary-foreground/80" />
               </div>
             </div>
-            <h2 className="text-xl font-orbitron font-bold neon-text">Identity Verified</h2>
-            <p className="text-sm text-muted-foreground">Initializing your AI Guardian...</p>
+            <div className="space-y-1.5">
+              <h2 className="font-orbitron text-lg font-semibold tracking-[-0.02em]">Identity Verified</h2>
+              <p className="text-sm text-muted-foreground">Initializing your AI Guardian…</p>
+            </div>
           </div>
         </div>
       )}
 
-      <GlassCard className="w-full max-w-md relative z-10" glow>
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-secondary/20 border border-primary/30 mb-3">
-            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-secondary" />
+      <div className="relative z-10 w-full max-w-[420px]">
+        <GlassCard className="p-7 sm:p-8" glow>
+          <div className="mb-7">
+            <div className="inline-flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-gradient-to-br from-primary to-secondary">
+                <div className="h-2.5 w-2.5 rounded-full bg-primary-foreground/90" />
+              </div>
+              <span className="font-orbitron text-[17px] font-semibold tracking-[-0.02em]">NeuroAura</span>
+            </div>
+            <h1 className="mt-6 font-orbitron text-[26px] font-semibold leading-[1.15] tracking-[-0.035em]">
+              {isLogin ? "Welcome back" : "Create your account"}
+            </h1>
+            <p className="mt-2 text-[14px] leading-relaxed text-muted-foreground">
+              {isLogin
+                ? "Sign in to continue with your wellness guardian."
+                : "A few seconds to set up your proactive wellness guardian."}
+            </p>
           </div>
-          <h1 className="text-2xl font-orbitron font-bold text-gradient">NeuroAura</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Your Proactive Mental Wellness Guardian
-          </p>
-        </div>
 
-        <div className="flex gap-2 p-1 bg-muted/30 rounded-xl mb-5">
-          <button
-            onClick={() => setIsLogin(true)}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-orbitron transition-colors ${
-              isLogin
-                ? "bg-primary/20 text-primary border border-primary/30"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Login
-          </button>
-          <button
-            onClick={() => setIsLogin(false)}
-            className={`flex-1 py-2 px-4 rounded-lg text-sm font-orbitron transition-colors ${
-              !isLogin
-                ? "bg-primary/20 text-primary border border-primary/30"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Sign Up
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <NeonInput
-              label="Full Name"
-              placeholder="Enter your name"
-              icon={<User className="w-5 h-5" />}
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            />
-          )}
-
-          <NeonInput
-            label="Email Address"
-            type="email"
-            placeholder="you@example.com"
-            icon={<Mail className="w-5 h-5" />}
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          />
-
-          <div className="relative">
-            <NeonInput
-              label="Password"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              icon={<Lock className="w-5 h-5" />}
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            />
+          <div className="mb-6 grid grid-cols-2 gap-1 rounded-xl border border-border bg-muted/40 p-1">
             <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-9 text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setIsLogin(true)}
+              className={`h-9 rounded-lg text-[13px] font-medium transition-colors ${
+                isLogin
+                  ? "bg-foreground/[0.08] text-foreground shadow-[0_1px_0_0_hsl(var(--foreground)/0.06)_inset]"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
             >
-              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              Login
+            </button>
+            <button
+              onClick={() => setIsLogin(false)}
+              className={`h-9 rounded-lg text-[13px] font-medium transition-colors ${
+                !isLogin
+                  ? "bg-foreground/[0.08] text-foreground shadow-[0_1px_0_0_hsl(var(--foreground)/0.06)_inset]"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Sign Up
             </button>
           </div>
 
-          {isLogin && (
-            <div className="flex justify-end">
-              <button 
-                type="button" 
-                onClick={() => setShowForgotPassword(true)}
-                className="text-sm text-primary hover:text-primary/80 transition-colors"
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {!isLogin && (
+              <NeonInput
+                label="Full Name"
+                placeholder="Enter your name"
+                icon={<User className="w-5 h-5" />}
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              />
+            )}
+
+            <NeonInput
+              label="Email Address"
+              type="email"
+              placeholder="you@example.com"
+              icon={<Mail className="w-5 h-5" />}
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+
+            <div className="relative">
+              <NeonInput
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                icon={<Lock className="w-5 h-5" />}
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                className="pr-11"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                className="absolute right-3 top-[34px] flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground/70 transition-colors hover:text-foreground"
               >
-                Forgot password?
+                {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
               </button>
             </div>
-          )}
 
-          <NeonButton type="submit" className="w-full group" disabled={isLoading}>
-            {isLoading ? (
-              <span className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                Verifying...
-              </span>
-            ) : (
-              <span className="flex items-center justify-center gap-2">
-                {isLogin ? "Access Portal" : "Create Account"}
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </span>
+            {isLogin && (
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Forgot password?
+                </button>
+              </div>
             )}
+
+            <NeonButton type="submit" size="lg" className="w-full group" disabled={isLoading}>
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+                  Verifying...
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  {isLogin ? "Access Portal" : "Create Account"}
+                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                </span>
+              )}
+            </NeonButton>
+          </form>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-card px-3 text-[12px] uppercase tracking-[0.08em] text-muted-foreground/70">
+                or continue with
+              </span>
+            </div>
+          </div>
+
+          <NeonButton
+            variant="ghost"
+            size="lg"
+            className="w-full"
+            onClick={handleGoogleSignIn}
+            type="button"
+          >
+            <svg className="mr-2 w-[18px] h-[18px]" viewBox="0 0 24 24">
+              <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Sign in with Google
           </NeonButton>
-        </form>
+        </GlassCard>
 
-        <div className="relative my-5">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border/50" />
-          </div>
-          <div className="relative flex justify-center">
-            <span className="px-4 bg-card text-sm text-muted-foreground">or continue with</span>
-          </div>
-        </div>
-
-        <NeonButton 
-          variant="ghost" 
-          className="w-full flex items-center justify-center gap-2"
-          onClick={handleGoogleSignIn}
-          type="button"
-        >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
-            <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-            <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-          </svg>
-          Sign in with Google
-        </NeonButton>
-      </GlassCard>
+        <p className="mt-6 text-center text-[12.5px] text-muted-foreground/70">
+          Protected by end-to-end encrypted sessions.
+        </p>
+      </div>
     </div>
   );
 };
+
 
 export default Auth;
